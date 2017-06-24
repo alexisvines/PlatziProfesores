@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.alexisvines.profesoresplatzi.model.Course;
@@ -40,14 +41,35 @@ public class CourseController {
 	 * @return
 	 */
 	@RequestMapping(value = "/courses", method = RequestMethod.GET, headers = "Accept=application/json")
-	public ResponseEntity<List<Course>> getCourses() {
+	public ResponseEntity<List<Course>> getCourses(@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "id_teacher",required=false) Long idTeacher) {
 		List<Course> courses = new ArrayList<>();
-		courses = _courseService.findAllCourses();
 
-		if (courses.isEmpty()) {
-			return new ResponseEntity(HttpStatus.NO_CONTENT);
+		if (idTeacher != null) {
+			courses = _courseService.findCoursesByIdTeacher(idTeacher);
+			if (courses.isEmpty()) {
+				return new ResponseEntity(HttpStatus.NO_CONTENT);
+			}
+		}
+
+		if (name != null) {
+			Course course = _courseService.findCourseByName(name);
+			if (course == null) {
+				return new ResponseEntity(HttpStatus.NO_CONTENT);
+			}
+			courses.add(course);
+			return new ResponseEntity<List<Course>>(courses, HttpStatus.OK);
+
+		}
+
+		if (name == null && idTeacher == null) {
+			courses = _courseService.findAllCourses();
+			if (courses.isEmpty()) {
+				return new ResponseEntity(HttpStatus.NO_CONTENT);
+			}
 		}
 		return new ResponseEntity<List<Course>>(courses, HttpStatus.OK);
+
 	}
 
 	/**
@@ -115,7 +137,6 @@ public class CourseController {
 		currentCourse.setName(course.getName());
 		currentCourse.setProject(course.getProject());
 		currentCourse.setThemes(course.getThemes());
-		
 
 		_courseService.updateCourse(currentCourse);
 
@@ -129,7 +150,7 @@ public class CourseController {
 	@RequestMapping(value = "/courses/{id}", method = RequestMethod.DELETE, headers = "Accept=application/json")
 	public ResponseEntity<String> deleteCourse(@PathVariable("id") Long idCourse) {
 
-		Course currentCourse= _courseService.findCourseById(idCourse);
+		Course currentCourse = _courseService.findCourseById(idCourse);
 
 		if (idCourse == null || idCourse <= 0) {
 			return new ResponseEntity(new CustomErrorType("idTeacher es requerido"), HttpStatus.CONFLICT);

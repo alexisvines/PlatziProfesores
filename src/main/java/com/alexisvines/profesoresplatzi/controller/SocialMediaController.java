@@ -12,12 +12,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.alexisvines.profesoresplatzi.model.SocialMedia;
 import com.alexisvines.profesoresplatzi.service.SocialMediaService;
 import com.alexisvines.profesoresplatzi.util.CustomErrorType;
-
 
 /**
  * 
@@ -33,21 +33,36 @@ public class SocialMediaController {
 
 	/**
 	 * GET ALL
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/socialMedias", method = RequestMethod.GET, headers = "Accept=application/json")
-	public ResponseEntity<List<SocialMedia>> getSocialMedia() {
+	public ResponseEntity<List<SocialMedia>> getSocialMedia(
+			@RequestParam(value = "name", required = false) String name) {
 		List<SocialMedia> socialMedias = new ArrayList<>();
-		socialMedias = _socialMediaService.findAllSocialMedias();
 
-		if (socialMedias.isEmpty()) {
-			return new ResponseEntity(HttpStatus.NO_CONTENT);
+		if (name == null) {
+			socialMedias = _socialMediaService.findAllSocialMedias();
+
+			if (socialMedias.isEmpty()) {
+				return new ResponseEntity(HttpStatus.NO_CONTENT);
+			}
+			return new ResponseEntity<List<SocialMedia>>(socialMedias, HttpStatus.OK);
+
+		} else {
+			SocialMedia socialMedia = _socialMediaService.findSocialMediaByName(name);
+			if (socialMedia == null) {
+				return new ResponseEntity(HttpStatus.NO_CONTENT);
+			}
+			socialMedias.add(socialMedia);
+			return new ResponseEntity<List<SocialMedia>>(socialMedias, HttpStatus.OK);
 		}
-		return new ResponseEntity<List<SocialMedia>>(socialMedias, HttpStatus.OK);
+
 	}
 
 	/**
 	 * GET BY ID
+	 * 
 	 * @pathParam debe ser igual al parametro declarado en al URL
 	 * @param idSocialMedia
 	 * @return
@@ -56,8 +71,8 @@ public class SocialMediaController {
 	public ResponseEntity<SocialMedia> getSocialMediaById(@PathVariable("id") Long idSocialMedia) {
 
 		if (idSocialMedia == null || idSocialMedia <= 0) {
-			
-			return new ResponseEntity(new CustomErrorType("idSocialMedia es requerido"),HttpStatus.CONFLICT);
+
+			return new ResponseEntity(new CustomErrorType("idSocialMedia es requerido"), HttpStatus.CONFLICT);
 		}
 
 		SocialMedia socialMedia = _socialMediaService.findSocialMediaById(idSocialMedia);
@@ -82,7 +97,7 @@ public class SocialMediaController {
 			UriComponentsBuilder uriComponentBuilder) {
 
 		if (socialMedia.getName().equals(null) || socialMedia.getName().isEmpty()) {
-			return new ResponseEntity(new CustomErrorType("name es requerido"),HttpStatus.CONFLICT);
+			return new ResponseEntity(new CustomErrorType("name es requerido"), HttpStatus.CONFLICT);
 
 		}
 
@@ -98,59 +113,60 @@ public class SocialMediaController {
 		return new ResponseEntity<String>(headers, HttpStatus.CREATED);
 
 	}
-	
-	
+
 	/**
 	 * UPDATE
+	 * 
 	 * @param idSocialMedia
 	 * @param socialMedia
 	 * @return
 	 */
 	@RequestMapping(value = "/socialMedias/{id}", method = RequestMethod.PATCH, headers = "Accept=application/json")
-	public ResponseEntity<?> updateSocialMedia(@PathVariable("id") Long idSocialMedia, @RequestBody SocialMedia socialMedia){
+	public ResponseEntity<?> updateSocialMedia(@PathVariable("id") Long idSocialMedia,
+			@RequestBody SocialMedia socialMedia) {
 		SocialMedia currentSocialMedia = _socialMediaService.findSocialMediaById(idSocialMedia);
-		
+
 		if (idSocialMedia == null || idSocialMedia <= 0) {
-			return new ResponseEntity(new CustomErrorType("idSocialMedia es requerido"),HttpStatus.CONFLICT);
+			return new ResponseEntity(new CustomErrorType("idSocialMedia es requerido"), HttpStatus.CONFLICT);
 
 		}
-		
-		if(currentSocialMedia == null){
+
+		if (currentSocialMedia == null) {
 			return new ResponseEntity(HttpStatus.NO_CONTENT);
 		}
-		
+
 		currentSocialMedia.setName(socialMedia.getName());
 		currentSocialMedia.setIcon(socialMedia.getIcon());
-		
+
 		_socialMediaService.updateSocialMedia(currentSocialMedia);
-		
-		return new ResponseEntity<SocialMedia>(currentSocialMedia,HttpStatus.OK);
-		
+
+		return new ResponseEntity<SocialMedia>(currentSocialMedia, HttpStatus.OK);
 
 	}
-	
+
 	/**
 	 * UPDATE
+	 * 
 	 * @param idSocialMedia
 	 * @param socialMedia
 	 * @return
 	 */
 	@RequestMapping(value = "/socialMedias/{id}", method = RequestMethod.DELETE, headers = "Accept=application/json")
-	public ResponseEntity<?> deleteSocialMedia(@PathVariable("id") Long idSocialMedia){
+	public ResponseEntity<?> deleteSocialMedia(@PathVariable("id") Long idSocialMedia) {
 		SocialMedia currentSocialMedia = _socialMediaService.findSocialMediaById(idSocialMedia);
-		
+
 		if (idSocialMedia == null || idSocialMedia <= 0) {
-			return new ResponseEntity(new CustomErrorType("idSocialMedia es requerido"),HttpStatus.CONFLICT);
+			return new ResponseEntity(new CustomErrorType("idSocialMedia es requerido"), HttpStatus.CONFLICT);
 
 		}
-		
+
 		SocialMedia socialMedia = _socialMediaService.findSocialMediaById(idSocialMedia);
-		if(socialMedia == null){
+		if (socialMedia == null) {
 			return new ResponseEntity(HttpStatus.NO_CONTENT);
 		}
-		
+
 		_socialMediaService.deleteSocialMedia(idSocialMedia);
-		
+
 		return new ResponseEntity<SocialMedia>(HttpStatus.OK);
 
 	}
