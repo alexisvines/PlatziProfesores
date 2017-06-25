@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -21,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  */
 @Entity
-@Table(name="teacher")
+@Table(name = "teacher")
 public class Teacher implements Serializable {
 
 	/**
@@ -30,25 +31,24 @@ public class Teacher implements Serializable {
 	private static final long serialVersionUID = 5793855515927496901L;
 
 	@Id
-	@Column(name="id_teacher")
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private long id_teacher;
-	@Column(name="name")
+	@Column(name = "id_teacher")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long idTeacher;
+	@Column(name = "name")
 	private String name;
-	@Column(name="avatar")
+	@Column(name = "avatar")
 	private String avatar;
-	
+
 	// A que entidad se refiere (clase)
-	@OneToMany(mappedBy="teacher")
-	@JsonIgnore 
+	@OneToMany(mappedBy = "teacher")
+	@JsonIgnore
 	private Set<Course> courses;
-	
+
 	// si borramos un profesor se borren sus social media
-	@OneToMany(cascade= CascadeType.ALL)
-	@JoinColumn(name="id_teacher")
-	@JsonIgnore 
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "id_teacher")
+	@JsonIgnore
 	private Set<TeacherSocialMedia> teacherSocialMedias;
-	
 
 	public Teacher() {
 		super();
@@ -60,12 +60,12 @@ public class Teacher implements Serializable {
 		this.avatar = avatar;
 	}
 
-	public long getId_teacher() {
-		return id_teacher;
+	public Long getIdTeacher() {
+		return idTeacher;
 	}
 
-	public void setId_teacher(long id_teacher) {
-		this.id_teacher = id_teacher;
+	public void setIdTeacher(Long idTeacher) {
+		this.idTeacher = idTeacher;
 	}
 
 	public String getName() {

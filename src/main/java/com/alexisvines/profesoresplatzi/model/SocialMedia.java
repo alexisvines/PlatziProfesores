@@ -31,16 +31,17 @@ public class SocialMedia implements Serializable {
 	@Id
 	@Column(name = "id_social_media")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long idSocialMedia;
+	private Long idSocialMedia;
 
 	@Column(name = "name")
 	private String name;
 	@Column(name = "icon")
 	private String icon;
-	
+
 	@OneToMany
-	@JoinColumn(name="id_social_media")
-	@JsonIgnore //anotacion para que al consultar por social medias no me traiga las relaciones
+	@JoinColumn(name = "id_social_media")
+	@JsonIgnore // anotacion para que al consultar por social medias no me
+				// traiga las relaciones
 	private Set<TeacherSocialMedia> teacherSocialMedias;
 
 	public SocialMedia() {
@@ -53,11 +54,11 @@ public class SocialMedia implements Serializable {
 		this.icon = icon;
 	}
 
-	public long getIdSocialMedia() {
+	public Long getIdSocialMedia() {
 		return idSocialMedia;
 	}
 
-	public void setIdSocialMedia(long idSocialMedia) {
+	public void setIdSocialMedia(Long idSocialMedia) {
 		this.idSocialMedia = idSocialMedia;
 	}
 

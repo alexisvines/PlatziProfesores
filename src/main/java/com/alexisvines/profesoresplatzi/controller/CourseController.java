@@ -111,7 +111,7 @@ public class CourseController {
 		Course courseInsertado = _courseService.findCourseByName(course.getName());
 		HttpHeaders headers = new HttpHeaders();
 		headers.setLocation(
-				uriComponentBuilder.path("/v1/courses/{id}").buildAndExpand(courseInsertado.getId_course()).toUri());
+				uriComponentBuilder.path("/v1/courses/{id}").buildAndExpand(courseInsertado.getIdCourse()).toUri());
 
 		return new ResponseEntity<String>(headers, HttpStatus.CREATED);
 

@@ -61,4 +61,9 @@ public class SocialMediaServiceImpl implements SocialMediaService {
 		return _socialMediaDao.findSocialMediaByIdAndName(idSocialMedia, nickname);
 	}
 
+	@Override
+	public TeacherSocialMedia findSocialMediabyIdTeacherAndIdSocialMedia(Long idTeacher, Long idSocialMedia) {
+		return _socialMediaDao.findSocialMediabyIdTeacherAndIdSocialMedia(idTeacher,idSocialMedia);
+	}
+
 }
