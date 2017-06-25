@@ -244,10 +244,41 @@ public class TeacherController {
 					new CustomErrorType("Error durante la subida: " + multipartFile.getOriginalFilename()),
 					HttpStatus.NO_CONTENT);
 		}
-
 	}
 
-	{
+	/**
+	 * Get image by id teacher
+	 */
+	@RequestMapping(value = "/teachers/{id_teacher}/images")
+	public ResponseEntity<byte[]> getTeachaerImage(@PathVariable("id_teacher") Long idTeacher) {
+		if (idTeacher == null) {
+			return new ResponseEntity(new CustomErrorType("Por favor ingrese el id del teacher"),
+					HttpStatus.NO_CONTENT);
+		}
+
+		Teacher teacher = _teacherService.findTeacherById(idTeacher);
+
+		if (teacher == null) {
+			return new ResponseEntity(
+					new CustomErrorType("El teacher con id : " + idTeacher + " no se encuentra en BD"),
+					HttpStatus.NO_CONTENT);
+		}
+
+		try {
+			String filename = teacher.getAvatar();
+			Path path = Paths.get(filename);
+			File f = path.toFile();
+			if (!f.exists()) {
+				return new ResponseEntity(new CustomErrorType("Imagen no encontrada"), HttpStatus.NO_CONTENT);
+			}
+			byte[] image = Files.readAllBytes(path);
+
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(image);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity(new CustomErrorType("Error al mostrar la imagen"), HttpStatus.NO_CONTENT);
+		}
 
 	}
 
