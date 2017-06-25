@@ -249,7 +249,7 @@ public class TeacherController {
 	/**
 	 * Get image by id teacher
 	 */
-	@RequestMapping(value = "/teachers/{id_teacher}/images")
+	@RequestMapping(value = "/teachers/{id_teacher}/images",method = RequestMethod.GET)
 	public ResponseEntity<byte[]> getTeachaerImage(@PathVariable("id_teacher") Long idTeacher) {
 		if (idTeacher == null) {
 			return new ResponseEntity(new CustomErrorType("Por favor ingrese el id del teacher"),
@@ -279,6 +279,46 @@ public class TeacherController {
 			e.printStackTrace();
 			return new ResponseEntity(new CustomErrorType("Error al mostrar la imagen"), HttpStatus.NO_CONTENT);
 		}
+
+	}
+
+	/**
+	 * Delete Image
+	 */
+	@RequestMapping(value = "/teachers/{id_teacher}/images", method = RequestMethod.DELETE, headers = "Accept=application/json")
+	public ResponseEntity<?> deleteTeacherImage(@PathVariable(value = "id_teacher") Long idTeacher) {
+
+		if (idTeacher == null) {
+			return new ResponseEntity(new CustomErrorType("Por favor ingrese el id del teacher"),
+					HttpStatus.NO_CONTENT);
+		}
+
+		Teacher teacher = _teacherService.findTeacherById(idTeacher);
+
+		if (teacher == null) {
+			return new ResponseEntity(
+					new CustomErrorType("El teacher con id : " + idTeacher + " no se encuentra en BD"),
+					HttpStatus.NO_CONTENT);
+		}
+
+		if (teacher.getAvatar() == null || teacher.getAvatar().isEmpty()) {
+			return new ResponseEntity(
+					new CustomErrorType("El teacher con id : " + idTeacher + " no tiene una imagen asociada"),
+					HttpStatus.NO_CONTENT);
+		}
+
+		String filename = teacher.getAvatar();
+		Path path = Paths.get(filename);
+		File f = path.toFile();
+
+		if (f.exists()) {
+			f.delete();
+		}
+
+		teacher.setAvatar("");
+		_teacherService.updateTeacher(teacher);
+
+		return new ResponseEntity<Teacher>(HttpStatus.NO_CONTENT);
 
 	}
 
