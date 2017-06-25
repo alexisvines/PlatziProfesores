@@ -1,11 +1,18 @@
 package com.alexisvines.profesoresplatzi.controller;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.alexisvines.profesoresplatzi.model.Teacher;
@@ -30,6 +38,8 @@ public class TeacherController {
 
 	@Autowired
 	TeacherService _teacherService;
+
+	public static final String TEACHER_UPLOAD_FOLDER = "images/teachers/";
 
 	/**
 	 * GET ALL
@@ -168,6 +178,76 @@ public class TeacherController {
 		_teacherService.deleteTeacher(idTeacher);
 
 		return new ResponseEntity<String>(HttpStatus.OK);
+
+	}
+
+	/**
+	 * UPLOAD IMAGE
+	 * 
+	 */
+	@RequestMapping(value = "teachers/image", method = RequestMethod.POST, headers = "content-type=multipart/form-data")
+	public ResponseEntity<byte[]> uploadTeacherImage(@RequestParam("id_teacher") Long idTeacher,
+			@RequestParam("file") MultipartFile multipartFile, UriComponentsBuilder componentsBuilder) {
+
+		if (idTeacher == null) {
+			return new ResponseEntity(new CustomErrorType("Por favor ingrese el idTeacher"), HttpStatus.NO_CONTENT);
+		}
+
+		if (multipartFile.isEmpty()) {
+			return new ResponseEntity(new CustomErrorType("Por favor seleccione una imagen para subir"),
+					HttpStatus.NO_CONTENT);
+
+		}
+
+		Teacher teacher = _teacherService.findTeacherById(idTeacher);
+
+		if (teacher == null) {
+			return new ResponseEntity(
+					new CustomErrorType("El teacher con id : " + idTeacher + " no se encuentra en BD"),
+					HttpStatus.NO_CONTENT);
+		}
+
+		// Si es que ya existe el archivo se debe borrar de la carpeta para
+		// ingresar el nuevo
+		if (teacher.getAvatar() != null || !teacher.getAvatar().isEmpty()) {
+			String filename = teacher.getAvatar();
+			Path path = Paths.get(filename);
+			File f = path.toFile();
+			if (f.exists()) {
+				f.delete();
+			}
+		}
+
+		try {
+			Date date = new Date();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd-HH-mm-ss");
+			String dateName = dateFormat.format(date);
+
+			// Se seta el nombre del teacher en el campo de imagen en BD
+			String filename = String.valueOf(idTeacher) + "-pictureTeacher-" + dateName + "."
+					+ multipartFile.getContentType().split("/")[1];
+			teacher.setAvatar(TEACHER_UPLOAD_FOLDER + filename);
+
+			// Se escribe el archivo en la carpeta de images
+			byte[] bytes = multipartFile.getBytes();
+			Path path = Paths.get(TEACHER_UPLOAD_FOLDER + filename);
+			Files.write(path, bytes);
+
+			_teacherService.updateTeacher(teacher);
+
+			// Se retorna la imagen
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(bytes);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity(
+					new CustomErrorType("Error durante la subida: " + multipartFile.getOriginalFilename()),
+					HttpStatus.NO_CONTENT);
+		}
+
+	}
+
+	{
 
 	}
 
